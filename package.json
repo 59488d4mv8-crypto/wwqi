@@ -5,7 +5,7 @@
   "main": "index.html",
   "private": true,
   "scripts": {
-    "build": "echo '✅ 纯静态站，无需构建。直接部署当前目录即可。'",
+    "build": "rm -rf dist && mkdir -p dist && cp -r index.html 404.html robots.txt sitemap.xml css js data _headers _redirects dist/ 2>/dev/null; echo '✅ 构建完成：所有静态文件已复制到 dist/'",
     "serve": "python3 -m http.server 8080",
     "dev": "python3 -m http.server 8080"
   },
