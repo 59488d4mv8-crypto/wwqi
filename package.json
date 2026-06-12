@@ -1,0 +1,23 @@
+{
+  "name": "python-data-analysis-edu-platform",
+  "version": "1.0.0",
+  "description": "Python 商务数据分析在线教育平台 - 浏览器内运行 Python 的纯静态学习站",
+  "main": "index.html",
+  "private": true,
+  "scripts": {
+    "build": "echo '✅ 纯静态站，无需构建。直接部署当前目录即可。'",
+    "serve": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080"
+  },
+  "keywords": [
+    "python",
+    "pandas",
+    "education",
+    "data-analysis",
+    "pyodide",
+    "static-site",
+    "cloudflare-pages"
+  ],
+  "author": "wwqi",
+  "license": "MIT"
+}
