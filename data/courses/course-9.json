@@ -1,0 +1,263 @@
+{
+  "id": 9,
+  "title": "教师授课质量多维度综合评分模型",
+  "subtitle": "评分、完课率、互动率、复购率 → 综合指标",
+  "businessGoal": "客观评价教师教学效果",
+  "skills": [
+    "权重计算",
+    "标准化",
+    "雷达图"
+  ],
+  "dataset": "sample-teachers.csv",
+  "cover": "🧑‍🏫",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "教师多维评分概览",
+      "content": "每位老师有评分、完课率、互动率、复购率 4 个指标，先总体查看。",
+      "codeExamples": [
+        {
+          "title": "表",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-teachers.csv')\nprint(df)"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "做综合评价的思路一般是？",
+          "options": [
+            "归一化后加权",
+            "取最大值",
+            "取最小值",
+            "随机"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "Min-Max 归一化与加权总分",
+      "content": "将评分压缩到 [0,1]，与其他百分比指标同一维度，再按权重累加。",
+      "codeExamples": [
+        {
+          "title": "综合评分",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-teachers.csv')\ndf['rating_norm'] = df['rating_5'] / 5.0\nw = {'rating_norm': 0.4, 'completion_rate': 0.25, 'interaction_rate': 0.15, 'repurchase_rate': 0.2}\ndf['total'] = df['rating_norm']*w['rating_norm'] + df['completion_rate']*w['completion_rate'] + df['interaction_rate']*w['interaction_rate'] + df['repurchase_rate']*w['repurchase_rate']\ndf = df.sort_values('total', ascending=False).reset_index(drop=True)\nprint(df[['teacher','total','rating_norm','completion_rate','interaction_rate','repurchase_rate']].round(3))\nfig, ax = plt.subplots(figsize=(9,5))\nax.bar(df['teacher'], df['total'], color='#2563eb')\nax.set_ylabel('综合得分'); ax.set_title('教师综合评分'); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "tf",
+          "question": "不同量纲先归一化再加权是常见做法。",
+          "options": [
+            "正确",
+            "错误"
+          ],
+          "answer": 0,
+          "explain": ""
+        },
+        {
+          "type": "fill",
+          "question": "把 5 分制映射到 0-1，用 df['rating_5'] / ____",
+          "answer": "5",
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "雷达图",
+      "content": "Matplotlib 的 polar 轴画雷达图，对比不同老师的多维度表现。",
+      "codeExamples": [
+        {
+          "title": "雷达",
+          "code": "import numpy as np; import matplotlib.pyplot as plt; import pandas as pd\ndf = pd.read_csv('sample-teachers.csv')\ndf['rating_norm'] = df['rating_5']/5\nlabels = ['评分','完课率','互动率','复购率']; N = len(labels)\nangles = np.linspace(0, 2*np.pi, N, endpoint=False).tolist()\nfig, ax = plt.subplots(figsize=(6,6), subplot_kw={'polar': True})\nfor _, row in df.iterrows():\n    values = [row['rating_norm'], row['completion_rate'], row['interaction_rate'], row['repurchase_rate']]\n    v = values + values[:1]; a = angles + angles[:1]\n    ax.plot(a, v, 'o-', label=row['teacher']); ax.fill(a, v, alpha=0.1)\nax.set_thetagrids([a*180/np.pi for a in angles], labels)\nax.set_ylim(0, 1); ax.legend(loc='upper right', bbox_to_anchor=(1.25, 1.1))\nplt.title('教师多维综合评价'); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "雷达图用的坐标系是？",
+          "options": [
+            "极坐标 polar",
+            "笛卡尔",
+            "对数",
+            "地理"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "计算每位教师的综合得分（评分 40% / 完课 25% / 互动 15% / 复购 20%）并排序。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-teachers.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "df['rating_norm']=df['rating_5']/5",
+        "加权求和",
+        "sort_values"
+      ],
+      "sampleAnswer": "df['rating_norm'] = df['rating_5']/5\ndf['total'] = 0.4*df['rating_norm'] + 0.25*df['completion_rate'] + 0.2*df['interaction_rate'] + 0.15*df['repurchase_rate']\nout = df.sort_values('total', ascending=False).reset_index(drop=True)\nprint(out[['teacher','total','rating_5','completion_rate','interaction_rate','repurchase_rate']].round(3))"
+    },
+    {
+      "id": "e2",
+      "prompt": "输出各维度的平均，并用柱状图呈现。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-teachers.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "[['rating_5','completion_rate','interaction_rate','repurchase_rate']].mean()",
+        ".plot(kind='bar')"
+      ],
+      "sampleAnswer": "means = df[['rating_5','completion_rate','interaction_rate','repurchase_rate']].mean()\nprint(means.round(3))\nmeans.plot(kind='bar', color=['#2563eb','#f97316','#16a34a','#8b5cf6'])\nplt.ylabel('平均值'); plt.title('各维度平均分'); plt.xticks(rotation=20); plt.tight_layout(); plt.show()"
+    },
+    {
+      "id": "e3",
+      "prompt": "找出综合得分最高的教师，输出其得分与各维度指标。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-teachers.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "先算 total",
+        "再 df.loc[df['total'].idxmax()]"
+      ],
+      "sampleAnswer": "df['rating_norm'] = df['rating_5']/5\ndf['total'] = 0.4*df['rating_norm'] + 0.25*df['completion_rate'] + 0.2*df['interaction_rate'] + 0.15*df['repurchase_rate']\nbest = df.loc[df['total'].idxmax()]\nprint(best[['teacher','total','rating_5','completion_rate','interaction_rate','repurchase_rate']])"
+    }
+  ],
+  "quizzes": [
+    {
+      "type": "single",
+      "question": "多指标综合评分第一步常做？",
+      "options": [
+        "归一化/标准化",
+        "求和",
+        "取最大值",
+        "随机"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "权重需由业务或经验确定。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "可视化多维评价的方式？",
+      "options": [
+        "雷达图",
+        "平行坐标",
+        "加权总分柱状图",
+        "表格"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "取列中最大值所在行用 df['col'].idx____",
+      "answer": "max",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "排序后重置索引用？",
+      "options": [
+        "reset_index(drop=True)",
+        "dropna",
+        "head",
+        "mean"
+      ],
+      "answer": 0,
+      "explain": ""
+    }
+  ],
+  "finalExam": [
+    {
+      "type": "single",
+      "question": "综合评价教师教学效果应看？",
+      "options": [
+        "评分、完课率、互动率、复购率等多维度",
+        "讲师年龄",
+        "讲师手机",
+        "随机数"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "权重分配会显著影响排名，因此要谨慎。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "综合评分可视化常用形式？",
+      "options": [
+        "雷达",
+        "柱状",
+        "条形",
+        "表格"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "把 5 分制缩放到 [0,1] 用 / ____",
+      "answer": "5",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "repurchase_rate 的含义？",
+      "options": [
+        "复购率",
+        "完课率",
+        "点击率",
+        "留存率"
+      ],
+      "answer": 0,
+      "explain": ""
+    }
+  ]
+}

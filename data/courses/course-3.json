@@ -1,0 +1,260 @@
+{
+  "id": 3,
+  "title": "在线教育用户 RFM 价值分层分析",
+  "subtitle": "R(最近学习) / F(学习频次) / M(学习时长或付费)",
+  "businessGoal": "识别高价值用户、潜力用户与沉睡用户",
+  "skills": [
+    "RFM 分箱",
+    "用户标签",
+    "可视化分组"
+  ],
+  "dataset": "sample-rfm.csv",
+  "cover": "💎",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "RFM 介绍与预处理",
+      "content": "R = 距最近学习的天数（越小越好）；F = 学习频次；M = 学习时长/付费金额。",
+      "codeExamples": [
+        {
+          "title": "读取与描述",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-rfm.csv')\nprint(df.describe())"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "tf",
+          "question": "R 越小表示最近越活跃。",
+          "options": [
+            "正确",
+            "错误"
+          ],
+          "answer": 0,
+          "explain": ""
+        },
+        {
+          "type": "single",
+          "question": "等频分箱用？",
+          "options": [
+            "pd.qcut",
+            "pd.sample",
+            "df.head",
+            "df.tail"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "分箱与打分",
+      "content": "使用 pd.qcut 把 R/F/M 分三档并相加。",
+      "codeExamples": [
+        {
+          "title": "打分",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-rfm.csv')\ndf['R_score'] = pd.qcut(df['recency_days'], 3, labels=[3,2,1]).astype(int)\ndf['F_score'] = pd.qcut(df['frequency'], 3, labels=[1,2,3]).astype(int)\ndf['M_score'] = pd.qcut(df['monetary_minutes'], 3, labels=[1,2,3]).astype(int)\ndf['RFM_total'] = df['R_score']+df['F_score']+df['M_score']\nprint(df[['user_id','R_score','F_score','M_score','RFM_total']].head())\nprint(df['RFM_total'].value_counts().sort_index())"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "fill",
+          "question": "等频分箱用 pd.____",
+          "answer": "qcut",
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "用户分层与标签",
+      "content": "按总分分高价值 / 潜力 / 沉睡用户，并做饼图。",
+      "codeExamples": [
+        {
+          "title": "分层",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-rfm.csv')\ndf['R_score'] = pd.qcut(df['recency_days'], 3, labels=[3,2,1]).astype(int)\ndf['F_score'] = pd.qcut(df['frequency'], 3, labels=[1,2,3]).astype(int)\ndf['M_score'] = pd.qcut(df['monetary_minutes'], 3, labels=[1,2,3]).astype(int)\ndf['RFM_total'] = df['R_score']+df['F_score']+df['M_score']\ndef seg(t):\n    if t >= 8: return '高价值'\n    if t >= 5: return '潜力'\n    return '沉睡用户'\ndf['segment'] = df['RFM_total'].apply(seg)\ncounts = df['segment'].value_counts(); print(counts)\ncounts.plot(kind='pie', autopct='%.1f%%', figsize=(5,5))\nplt.ylabel(''); plt.title('用户 RFM 价值分层'); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "对数值逐行打标签最常用？",
+          "options": [
+            "apply",
+            "cumsum",
+            "drop",
+            "describe"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "把 recency_days 分 5 档，输出各档人数。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-rfm.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "pd.qcut(df['recency_days'], 5)",
+        "value_counts().sort_index()"
+      ],
+      "sampleAnswer": "df['r_bin'] = pd.qcut(df['recency_days'], 5)\nprint(df['r_bin'].value_counts().sort_index())"
+    },
+    {
+      "id": "e2",
+      "prompt": "按 3 档打 RFM 总分并输出高价值用户数。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-rfm.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "R_score/F_score/M_score",
+        "(RFM_total >= 8).sum()"
+      ],
+      "sampleAnswer": "df['R_score']=pd.qcut(df['recency_days'],3,labels=[3,2,1]).astype(int)\ndf['F_score']=pd.qcut(df['frequency'],3,labels=[1,2,3]).astype(int)\ndf['M_score']=pd.qcut(df['monetary_minutes'],3,labels=[1,2,3]).astype(int)\ndf['RFM_total']=df['R_score']+df['F_score']+df['M_score']\nprint('高价值用户:', (df['RFM_total']>=8).sum())"
+    },
+    {
+      "id": "e3",
+      "prompt": "绘制各分层的平均付费金额柱状图。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-rfm.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "先划分 segment",
+        "groupby('segment')['monetary_pay'].mean().plot(kind='bar')"
+      ],
+      "sampleAnswer": "df['R_score']=pd.qcut(df['recency_days'],3,labels=[3,2,1]).astype(int)\ndf['F_score']=pd.qcut(df['frequency'],3,labels=[1,2,3]).astype(int)\ndf['M_score']=pd.qcut(df['monetary_minutes'],3,labels=[1,2,3]).astype(int)\ndf['RFM_total']=df['R_score']+df['F_score']+df['M_score']\ndf['segment']=df['RFM_total'].apply(lambda t: '高价值' if t>=8 else ('潜力' if t>=5 else '沉睡用户'))\ndf.groupby('segment')['monetary_pay'].mean().plot(kind='bar',color=['#2563eb','#f59e0b','#ef4444'])\nplt.ylabel('平均付费金额'); plt.tight_layout(); plt.show()"
+    }
+  ],
+  "quizzes": [
+    {
+      "type": "single",
+      "question": "RFM 的 R 代表？",
+      "options": [
+        "注册日期",
+        "最近学习距今天数",
+        "推荐人数",
+        "地区"
+      ],
+      "answer": 1,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "qcut 是等距分箱。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 1,
+      "explain": "qcut 是等频；cut 是等距。"
+    },
+    {
+      "type": "multi",
+      "question": "常见用户分层名称？",
+      "options": [
+        "高价值",
+        "潜力",
+        "沉睡用户",
+        "IP 地址段"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "饼图最关注？",
+      "options": [
+        "颜色",
+        "各分层占比",
+        "字体",
+        "图例"
+      ],
+      "answer": 1,
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "对 Series 逐元素做自定义处理用 .____",
+      "answer": "apply",
+      "explain": ""
+    }
+  ],
+  "finalExam": [
+    {
+      "type": "single",
+      "question": "高价值用户的典型 RFM？",
+      "options": [
+        "R=3/F=1/M=1",
+        "均 ≥2 且 F/M 较高",
+        "R=1/F=1/M=1",
+        "随机"
+      ],
+      "answer": 1,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "RFM 分层后可以对不同层对比平均付费、平均时长。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "RFM 分层后可做的运营动作？",
+      "options": [
+        "高价值用户专属权益",
+        "沉睡用户召回",
+        "潜力用户推荐进阶课程",
+        "直接删除低价值账号"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "qcut 的结果类型是 ____",
+      "answer": "Categorical",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "F 高但 R 也大的用户应视为？",
+      "options": [
+        "高价值",
+        "需召回",
+        "沉睡用户",
+        "新用户"
+      ],
+      "answer": 2,
+      "explain": ""
+    }
+  ]
+}

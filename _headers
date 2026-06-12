@@ -1,0 +1,53 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/*.html
+  Content-Type: text/html; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Content-Type: text/html; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+
+/css/*.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
+/js/*.js
+  Content-Type: text/javascript; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
+/data/*.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/data/courses/*.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/data/samples/*.csv
+  Content-Type: text/csv; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/*.wasm
+  Content-Type: application/wasm
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.jpg
+  Content-Type: image/jpeg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Content-Type: image/svg+xml
+  Cache-Control: public, max-age=31536000, immutable
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+
+/sitemap.xml
+  Content-Type: application/xml

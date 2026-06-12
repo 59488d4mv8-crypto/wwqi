@@ -1,0 +1,257 @@
+{
+  "id": 10,
+  "title": "在线教育平台用户画像与精准运营策略",
+  "subtitle": "年龄、地域、职业、偏好、设备、学习时段",
+  "businessGoal": "输出可直接使用的精准运营方案",
+  "skills": [
+    "用户画像聚合",
+    "饼图",
+    "柱状图",
+    "分层策略"
+  ],
+  "dataset": "sample-user-profile.csv",
+  "cover": "🧑‍🎓",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "用户画像数据概览",
+      "content": "浏览年龄、地域、职业、设备、学习时段与付费分布。",
+      "codeExamples": [
+        {
+          "title": "概览",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-user-profile.csv')\nprint(df.head())\nprint(df.describe(include='all'))"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "汇总分类变量最常用？",
+          "options": [
+            "value_counts",
+            "diff",
+            "rolling",
+            "shift"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "分类分布可视化",
+      "content": "对 region/job/device 等分别画图，便于识别高占比人群。",
+      "codeExamples": [
+        {
+          "title": "分布图",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-user-profile.csv')\ncols = ['region','job','device']\nfig, axes = plt.subplots(1, 3, figsize=(16,5))\nfor ax, c in zip(axes, cols):\n    df[c].value_counts().plot(kind='bar', ax=ax); ax.set_title(c); ax.set_ylabel('人数')\nplt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "tf",
+          "question": "使用 plt.subplots(1, N) 能方便生成多子图数组。",
+          "options": [
+            "正确",
+            "错误"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "分层策略与精准运营",
+      "content": "按年龄（pd.cut 切分）与地域组合，对比各层平均付费金额。",
+      "codeExamples": [
+        {
+          "title": "分层",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-user-profile.csv')\ndf['age_bin'] = pd.cut(df['age'], bins=[16,25,35,45,60], right=False)\nagg = df.groupby(['region','age_bin'])['pay_amount'].mean().unstack().round(2)\nprint(agg.fillna(0))\nagg.plot(kind='bar', figsize=(10,5))\nplt.ylabel('平均付费金额'); plt.title('地域 × 年龄 分层平均付费'); plt.xticks(rotation=25); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "按区间切分年龄最方便用？",
+          "options": [
+            "pd.cut",
+            "pd.qcut",
+            "sample",
+            "mean"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "输出不同职业的用户数与平均付费金额。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-user-profile.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "df.groupby('job').agg(用户数=('user_id','count'), 平均付费=('pay_amount','mean'))"
+      ],
+      "sampleAnswer": "out = df.groupby('job').agg(用户数=('user_id','count'), 平均付费=('pay_amount','mean')).round(2)\nprint(out)"
+    },
+    {
+      "id": "e2",
+      "prompt": "绘制学习时段 prefer_hour 的分布柱状图。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-user-profile.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "df['prefer_hour'].value_counts().sort_index().plot(kind='bar')"
+      ],
+      "sampleAnswer": "df['prefer_hour'].value_counts().sort_index().plot(kind='bar', color='#2563eb', figsize=(9,5))\nplt.xlabel('学习时段(小时)'); plt.ylabel('人数'); plt.title('用户学习时段偏好分布'); plt.tight_layout(); plt.show()"
+    },
+    {
+      "id": "e3",
+      "prompt": "按 region + device 分组输出平均付费金额，并用分组柱状图呈现。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-user-profile.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "df.groupby(['region','device'])['pay_amount'].mean().unstack()",
+        ".plot(kind='bar')"
+      ],
+      "sampleAnswer": "pv = df.groupby(['region','device'])['pay_amount'].mean().unstack().round(2)\nprint(pv.fillna(0))\npv.plot(kind='bar', figsize=(10,5))\nplt.ylabel('平均付费金额'); plt.title('地域 × 设备 平均付费'); plt.xticks(rotation=25); plt.tight_layout(); plt.show()"
+    }
+  ],
+  "quizzes": [
+    {
+      "type": "single",
+      "question": "汇总分类变量最常用？",
+      "options": [
+        "value_counts",
+        "diff",
+        "shift",
+        "sample"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "可通过 plt.subplots(1, N) 生成多子图并排展示。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "按区间切分年龄最方便？",
+      "options": [
+        "pd.cut",
+        "pd.qcut",
+        "sample",
+        "mean"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "常用用户画像维度？",
+      "options": [
+        "地域",
+        "职业",
+        "年龄",
+        "设备",
+        "学习时段"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "把长表聚合后转宽表可用 .unstack 或 .______",
+      "answer": "pivot_table",
+      "explain": ""
+    }
+  ],
+  "finalExam": [
+    {
+      "type": "single",
+      "question": "形成可直接使用的运营方案应关注？",
+      "options": [
+        "各维度的用户数与价值指标（付费/时长）",
+        "手机型号",
+        "用户 ID",
+        "随机数"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "年龄/地域/职业/设备/时段都是常见的画像分层维度。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "做用户画像常用的图表？",
+      "options": [
+        "饼图",
+        "柱状图",
+        "分组柱状图",
+        "数据表"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "分组聚合用 df.groupby(...).____(...)",
+      "answer": "agg",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "pay_amount 代表？",
+      "options": [
+        "付费金额",
+        "身高",
+        "完课率",
+        "评分"
+      ],
+      "answer": 0,
+      "explain": ""
+    }
+  ]
+}

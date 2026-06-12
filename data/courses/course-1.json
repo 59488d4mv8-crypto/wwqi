@@ -1,0 +1,133 @@
+{
+  "id": 1,
+  "title": "教育平台用户注册与活跃行为分析",
+  "subtitle": "从注册渠道、时段到日活/周活/月活与留存率",
+  "businessGoal": "判断哪些渠道获客质量最高，并输出渠道对比报告",
+  "skills": ["Pandas", "Matplotlib", "Seaborn", "时间序列"],
+  "dataset": "sample-users.csv",
+  "cover": "📊",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "数据概览与基本统计",
+      "content": "在真实项目中，我们通常先拿到一份原始用户表（CSV/Excel）。第一要务是读取数据、查看行数/列名、检查缺失值，再按渠道与注册日期做简单聚合，形成对数据的直观印象。",
+      "codeExamples": [
+        {
+          "title": "读取并观察数据",
+          "code": "import pandas as pd\n\ndf = pd.read_csv('sample-users.csv', parse_dates=['registered_at'])\nprint('行数：', len(df))\nprint(df.head())\nprint(df.isna().sum())\nprint(df['channel'].value_counts())"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "pandas.read_csv 中用于自动解析日期的参数是？",
+          "options": ["parse_dates", "date_parser", "as_date", "date_index"],
+          "answer": 0,
+          "explain": "parse_dates 可接受列名列表，或 True/False。"
+        },
+        {
+          "type": "tf",
+          "question": "DataFrame.isna().sum() 可用于统计每列缺失值数量。",
+          "options": ["正确", "错误"],
+          "answer": 0,
+          "explain": "isna() 返回布尔矩阵，sum() 按列汇总 True 的数量。"
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "注册渠道分析",
+      "content": "每个渠道带来的注册量、注册用户的平均活跃天数、7 日留存率等是评估渠道质量的基础。我们会使用 groupby 对 channel 聚合，并用 barplot 做可视化。",
+      "codeExamples": [
+        {
+          "title": "渠道注册量与平均活跃天数",
+          "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nsummary = df.groupby('channel').agg(\n    注册量=('user_id','count'),\n    平均活跃天数=('active_days','mean'),\n    7日留存=('retain_day7','mean')\n).reset_index()\nprint(summary)\n\nfig, ax = plt.subplots(figsize=(8,4))\nsns.barplot(data=summary, x='channel', y='注册量', ax=ax)\nax.set_title('各渠道注册量')\nplt.tight_layout()\nplt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "以下哪种方式最适合比较多个渠道的留存率？",
+          "options": ["折线图", "柱状图", "饼图", "散点图"],
+          "answer": 1,
+          "explain": "渠道是离散类别，柱状图最清晰。"
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "日活/周活/月活与留存率",
+      "content": "DAU（Daily Active Users）、WAU、MAU 是评估产品健康度的关键指标。我们会用时间序列把它们画出来，并计算 7/14 日留存曲线。",
+      "codeExamples": [
+        {
+          "title": "按日汇总注册量",
+          "code": "daily = df.groupby(df['registered_at'].dt.date).size()\nprint(daily.tail(7))\n\nimport matplotlib.pyplot as plt\nfig, ax = plt.subplots(figsize=(9,4))\ndaily.plot(ax=ax, marker='o')\nax.set_title('每日注册量趋势')\nax.set_ylabel('注册数')\nplt.tight_layout()\nplt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "fill",
+          "question": "若要在 Python 中将日期字符串解析为 datetime，最常用的 pandas 方法是 pd.to____()",
+          "answer": "datetime",
+          "explain": "pd.to_datetime() 可把字符串/object 列解析为 datetime。"
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "计算各渠道的 7 日留存率，并输出排名前 3 的渠道。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-users.csv')\n\n# 请在此处计算各渠道的 retain_day7 均值，按降序排序，并打印前 3 名\nresult = None\nprint(result)",
+      "expectedChecker": {
+        "type": "function",
+        "name": "check_channel_retain",
+        "expectedContains": ["sort_values", "ascending=False"]
+      },
+      "hints": [
+        "使用 groupby('channel')['retain_day7'].mean()",
+        "使用 .sort_values(ascending=False) 排序",
+        "使用 .head(3) 取前 3 名"
+      ],
+      "sampleAnswer": "result = df.groupby('channel')['retain_day7'].mean().sort_values(ascending=False).head(3)"
+    },
+    {
+      "id": "e2",
+      "prompt": "绘制每小时注册量的柱状图，判断用户最常在哪个时段注册。",
+      "starterCode": "import pandas as pd\nimport matplotlib.pyplot as plt\ndf = pd.read_csv('sample-users.csv', parse_dates=['registered_at'])\n\n# 请在此处计算 registered_at 的小时分布，并绘制柱状图\n",
+      "expectedChecker": {
+        "type": "function",
+        "name": "check_hourly_plot",
+        "expectedContains": [".dt.hour", "plt.show()"]
+      },
+      "hints": [
+        "可以用 df['registered_at'].dt.hour 提取小时",
+        "使用 value_counts().sort_index() 获得按小时的计数"
+      ],
+      "sampleAnswer": "df['registered_at'].dt.hour.value_counts().sort_index().plot(kind='bar')\nplt.show()"
+    },
+    {
+      "id": "e3",
+      "prompt": "输出 7 日留存率最高的渠道名称及其留存率（保留 2 位小数）。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-users.csv')\n\n# 请在此处完成\n",
+      "expectedChecker": { "type": "output_match", "expectedContains": ["%"] },
+      "hints": ["使用 mean() 计算均值", "用 round(2) 保留 2 位小数", "将结果格式化为 99.99% 形式"],
+      "sampleAnswer": "top = df.groupby('channel')['retain_day7'].mean().sort_values(ascending=False)\nprint(f'{top.index[0]}: {top.iloc[0]:.2%}')"
+    }
+  ],
+  "quizzes": [
+    { "type": "single", "question": "Pandas 中按列分组统计的核心方法是？", "options": ["split", "groupby", "filter", "concat"], "answer": 1, "explain": "groupby 是分组-聚合的核心函数。" },
+    { "type": "single", "question": "绘制柱状图最常用的 matplotlib 函数是？", "options": ["plt.scatter", "plt.bar / plot(kind='bar')", "plt.pie", "plt.hist"], "answer": 1, "explain": "柱状图用 bar。" },
+    { "type": "tf", "question": "留存率通常表示为 0~1 之间的小数，可用 % 形式展示。", "options": ["正确", "错误"], "answer": 0, "explain": "常见做法。" },
+    { "type": "single", "question": "DAU 的中文全称是？", "options": ["月活跃用户", "日活跃用户", "周活跃用户", "新增用户"], "answer": 1, "explain": "Daily Active Users。" },
+    { "type": "fill", "question": "Pandas 中将一列日期解析为 datetime 类型的函数是 pd.to____", "answer": "datetime", "explain": "to_datetime 是常用解析方法。" },
+    { "type": "multi", "question": "以下哪些是评估渠道质量的合理指标？", "options": ["注册量", "7 日留存率", "平均活跃天数", "随机 UUID 个数"], "answer": [0, 1, 2], "explain": "UUID 是用户标识，不是指标。" }
+  ],
+  "finalExam": [
+    { "type": "single", "question": "在本项目业务目标中，我们主要比较什么？", "options": ["渠道获客成本", "各渠道的用户质量（留存/活跃）", "用户的设备偏好", "客服响应时长"], "answer": 1, "explain": "项目目标是判断哪些渠道获客质量最高。" },
+    { "type": "single", "question": "要得到渠道 × 指标的二维汇总表，最常用的方法是？", "options": ["df.sample()", "df.groupby().agg()", "df.dropna()", "df.rename()"], "answer": 1, "explain": "groupby + agg 能一次性汇总多个指标。" },
+    { "type": "fill", "question": "在 Matplotlib 中绘制图后，调用 ____() 方法才会在浏览器/输出中显示图像。", "answer": "plt.show", "explain": "plt.show() 触发图像渲染。" },
+    { "type": "tf", "question": "如果某渠道注册量很高，但 7 日留存率很低，说明该渠道用户质量可能较差。", "options": ["正确", "错误"], "answer": 0, "explain": "注册量只是获客规模，留存率才是质量。" },
+    { "type": "multi", "question": "做渠道对比分析时，合理的可视化选择包括？", "options": ["柱状图", "分组柱状图", "热力图", "散点图（活跃 vs 留存）"], "answer": [0, 1, 2, 3], "explain": "全部合理。" }
+  ]
+}

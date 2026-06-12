@@ -1,0 +1,262 @@
+{
+  "id": 2,
+  "title": "课程学习完成度与 dropout 流失预测",
+  "subtitle": "学习进度、退出节点、完课率、用户流失特征",
+  "businessGoal": "找出课程最容易流失的章节",
+  "skills": [
+    "数据清洗",
+    "特征工程",
+    "漏斗图",
+    "热力图"
+  ],
+  "dataset": "sample-learning-progress.csv",
+  "cover": "🎯",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "数据读取与完成度探索",
+      "content": "读取学习进度数据集，统计每章的 start/finish 均值。",
+      "codeExamples": [
+        {
+          "title": "章节完成度",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-learning-progress.csv')\np = df.groupby('chapter')[['started','finished']].mean()\nprint(p)\nimport matplotlib.pyplot as plt\np.plot(kind='bar', figsize=(9,4))\nplt.title('各章开始/完成率'); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "计算每章完成率的核心聚合方法？",
+          "options": [
+            "mean",
+            "count",
+            "sum",
+            "max"
+          ],
+          "answer": 0,
+          "explain": ""
+        },
+        {
+          "type": "tf",
+          "question": "dropna() 可以在聚合前删除缺失行。",
+          "options": [
+            "正确",
+            "错误"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "漏斗：识别流失章节",
+      "content": "对每章 finished 汇总，观察漏斗是否递减。",
+      "codeExamples": [
+        {
+          "title": "漏斗图",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-learning-progress.csv')\nfunnel = df.groupby('chapter')['finished'].sum()\nprint(funnel)\nfunnel.plot(kind='bar', color='#2563eb', figsize=(9,4))\nplt.title('各章完成人数'); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "识别流失节点最直观的可视化是？",
+          "options": [
+            "散点图",
+            "饼图",
+            "柱状/漏斗",
+            "箱线图"
+          ],
+          "answer": 2,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "用户流失特征与热力图",
+      "content": "以 pivot_table 构造用户 × 章节矩阵，并用 heatmap 呈现。",
+      "codeExamples": [
+        {
+          "title": "热力图",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-learning-progress.csv')\npivot = df.pivot_table(index='user_id', columns='chapter', values='finished')\nprint(pivot.head())\ntry:\n    import seaborn as sns; import matplotlib.pyplot as plt\n    fig, ax = plt.subplots(figsize=(9,5))\n    sns.heatmap(pivot.iloc[:30], cmap='Blues', ax=ax, cbar=False)\n    plt.tight_layout(); plt.show()\nexcept Exception as e:\n    print('seaborn 不可用', e)"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "fill",
+          "question": "构造二维矩阵最常用的方法是 pd._____",
+          "answer": "pivot_table",
+          "explain": ""
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "输出每章的完成率，并按升序打印前 3 个“流失最严重”的章节。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-learning-progress.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "groupby('chapter')['finished'].mean()",
+        "sort_values",
+        "head(3)"
+      ],
+      "sampleAnswer": "res = df.groupby('chapter')['finished'].mean().sort_values()\nprint(res.head(3))"
+    },
+    {
+      "id": "e2",
+      "prompt": "绘制 started / finished 的分组柱状图。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-learning-progress.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "groupby(...).agg(...).plot(kind='bar')"
+      ],
+      "sampleAnswer": "df.groupby('chapter')[['started','finished']].mean().plot(kind='bar', figsize=(9,4))\nplt.legend(['开始','完成']); plt.tight_layout(); plt.show()"
+    },
+    {
+      "id": "e3",
+      "prompt": "计算每章相对第 1 章的留存率，输出留存率最低的 3 章。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-learning-progress.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "by_ch = df.groupby('chapter')['finished'].sum()",
+        "ret = by_ch / by_ch.iloc[0]"
+      ],
+      "sampleAnswer": "by_ch = df.groupby('chapter')['finished'].sum()\nret = by_ch / by_ch.iloc[0]\nfor c, v in ret.sort_values().head(3).items():\n    print(c, f'{v:.2%}')"
+    }
+  ],
+  "quizzes": [
+    {
+      "type": "single",
+      "question": "漏斗每阶段的分母通常是？",
+      "options": [
+        "总体用户",
+        "上一阶段通过用户",
+        "付费用户",
+        "随机样本"
+      ],
+      "answer": 1,
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "找最易流失章节，本质找？",
+      "options": [
+        "完成率最低章节",
+        "最早章节",
+        "最长标题",
+        "最多用户章节"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "pivot_table 可以把长表转换为宽表。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "衡量课程完成度的合理指标？",
+      "options": [
+        "章节完成率",
+        "退出节点分布",
+        "平均进度",
+        "姓名长度"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "画柱状图最常用 plt.____",
+      "answer": "bar",
+      "explain": ""
+    }
+  ],
+  "finalExam": [
+    {
+      "type": "single",
+      "question": "业务目标“找最易流失章节”应关注？",
+      "options": [
+        "开始人数",
+        "章节完成率/留存率",
+        "标题",
+        "价格"
+      ],
+      "answer": 1,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "某章完成率明显低于其他章节，说明内容或呈现方式可能需要改进。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "常见的流失可视化？",
+      "options": [
+        "漏斗图",
+        "分组柱状图",
+        "折线图",
+        "热力图"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "让当前行和上一行比较用 df.shift(____)",
+      "answer": "1",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "df.groupby('chapter')['finished'].mean() 返回？",
+      "options": [
+        "完成人数",
+        "完成率",
+        "人数",
+        "章节数"
+      ],
+      "answer": 1,
+      "explain": ""
+    }
+  ]
+}

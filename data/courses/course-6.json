@@ -1,0 +1,246 @@
+{
+  "id": 6,
+  "title": "在线课程付费转化漏斗分析",
+  "subtitle": "浏览 → 试学 → 加购 → 付费 → 完课",
+  "businessGoal": "找到转化卡点，提升付费率",
+  "skills": [
+    "漏斗图",
+    "转化率",
+    "渠道对比"
+  ],
+  "dataset": "sample-funnel.csv",
+  "cover": "🛒",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "漏斗数据概览",
+      "content": "浏览→试学→加购→付费→完课，观察每阶段人数。",
+      "codeExamples": [
+        {
+          "title": "表",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-funnel.csv')\nprint(df)"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "漏斗分析强调？",
+          "options": [
+            "各阶段转化率",
+            "标题",
+            "用户 ID",
+            "随机数"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "单漏斗图",
+      "content": "用柱状图展示整体漏斗。",
+      "codeExamples": [
+        {
+          "title": "漏斗",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-funnel.csv')\ntotal = df[df['channel']=='总计'].copy()\nprint(total)\nfig, ax = plt.subplots(figsize=(8,4))\nax.bar(total['stage'], total['users'], color='#2563eb')\nfor i, u in enumerate(total['users']):\n    ax.text(i, u, str(u), ha='center', va='bottom')\nplt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "tf",
+          "question": "柱高表示每阶段通过用户数。",
+          "options": [
+            "正确",
+            "错误"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "渠道对比与转化卡点",
+      "content": "通过 pivot_table 形成宽表后做渠道 × 阶段归一化柱状图。",
+      "codeExamples": [
+        {
+          "title": "对比",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-funnel.csv')\npv = df.pivot_table(index='channel', columns='stage', values='users')\nprint(pv)\npv_norm = pv.div(pv['浏览'], axis=0)\npv_norm.T.plot(kind='bar', figsize=(9,5))\nplt.ylabel('相对浏览的转化率'); plt.title('各渠道漏斗转化率'); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "fill",
+          "question": "长表转宽表常用 pd._____",
+          "answer": "pivot_table",
+          "explain": ""
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "输出相对于上一阶段的转化率。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-funnel.csv')\ntotal = df[df['channel']=='总计'].copy()\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "pct_change()+1",
+        "首阶段置为 1"
+      ],
+      "sampleAnswer": "total['conv'] = total['users'].pct_change() + 1\ntotal.loc[total.index[0], 'conv'] = 1.0\ntotal['conv'] = total['conv'].map(lambda v: f'{v:.2%}')\nprint(total[['stage','users','conv']])"
+    },
+    {
+      "id": "e2",
+      "prompt": "绘制各渠道付费用户数柱状图。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-funnel.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "筛选 stage=='付费'，再 plot(x='channel', kind='bar')"
+      ],
+      "sampleAnswer": "paid = df[df['stage']=='付费']\npaid.plot(kind='bar', x='channel', y='users', color='#f97316', figsize=(9,4), legend=False)\nplt.ylabel('付费用户数'); plt.tight_layout(); plt.show()"
+    },
+    {
+      "id": "e3",
+      "prompt": "找到 “付费→完课” 转化率最低的渠道。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-funnel.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "pivot_table(index='channel', columns='stage', values='users')",
+        "pv['完课']/pv['付费'] 再 sort"
+      ],
+      "sampleAnswer": "pv = df.pivot_table(index='channel', columns='stage', values='users')\npv['c'] = pv['完课']/pv['付费']\nres = pv['c'].sort_values()\nprint('最低渠道:', res.index[0], f' ({res.iloc[0]:.2%})')"
+    }
+  ],
+  "quizzes": [
+    {
+      "type": "single",
+      "question": "转化率通常指？",
+      "options": [
+        "相对上一阶段的比例",
+        "绝对用户数",
+        "总用户数",
+        "随机值"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "可对不同渠道分别画漏斗以对比。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "识别转化卡点的方法？",
+      "options": [
+        "每阶段转化率最低者",
+        "渠道×阶段最低格",
+        "加总所有阶段",
+        "只看标题"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "行的变化率用 Series.____",
+      "answer": "pct_change",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "归一化到浏览阶段最直接用？",
+      "options": [
+        "users/users.iloc[0]",
+        ".mean()",
+        ".cumsum()",
+        ".rank()"
+      ],
+      "answer": 0,
+      "explain": ""
+    }
+  ],
+  "finalExam": [
+    {
+      "type": "single",
+      "question": "提升付费率应关注？",
+      "options": [
+        "各阶段转化率",
+        "标题",
+        "城市",
+        "随机数"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "某渠道试学→加购转化率低，可能需改进试学体验。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "提升付费率的常用手段？",
+      "options": [
+        "优化试学内容",
+        "加购按钮/弹窗引导",
+        "限时优惠",
+        "忽略低转化渠道"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "长表转换宽表用 df.____ 或 pivot_table。",
+      "answer": "pivot",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "pct_change() 默认比较？",
+      "options": [
+        "第一行",
+        "上一行",
+        "下一行",
+        "任一行"
+      ],
+      "answer": 1,
+      "explain": ""
+    }
+  ]
+}

@@ -1,0 +1,260 @@
+{
+  "id": 5,
+  "title": "学生学习时长与成绩相关性分析",
+  "subtitle": "学习时长、暂停次数、快进次数 vs 章节测验分数",
+  "businessGoal": "判断哪些行为影响成绩最大",
+  "skills": [
+    "相关性分析",
+    "散点图",
+    "箱线图",
+    "回归分析"
+  ],
+  "dataset": "sample-duration-score.csv",
+  "cover": "📈",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "相关性矩阵",
+      "content": "计算 duration / pauses / forwards vs 分数的相关系数并用热力图展示。",
+      "codeExamples": [
+        {
+          "title": "corr",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-duration-score.csv')\nprint(df.corr(numeric_only=True).round(2))\ntry:\n    import seaborn as sns; import matplotlib.pyplot as plt\n    fig, ax = plt.subplots(figsize=(6,5))\n    sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm', vmin=-1, vmax=1, ax=ax)\n    plt.tight_layout(); plt.show()\nexcept Exception as e:\n    print('seaborn 不可用', e)"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "相关系数取值范围是？",
+          "options": [
+            "[0,1]",
+            "[-1,1]",
+            "[0,100]",
+            "任意实数"
+          ],
+          "answer": 1,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "散点图与线性回归",
+      "content": "用 np.polyfit(x, y, 1) 拟合一元线性模型并画图。",
+      "codeExamples": [
+        {
+          "title": "回归",
+          "code": "import pandas as pd; import numpy as np; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-duration-score.csv')\nx = df['duration_min'].values; y = df['quiz_score'].values\nslope, intercept = np.polyfit(x, y, 1)\nyh = slope * x + intercept\nfig, ax = plt.subplots(figsize=(7,5))\nax.scatter(x, y, alpha=.4, s=8); ax.plot(x, yh, 'r', lw=2, label=f'score={slope:.2f}*duration+{intercept:.1f}')\nax.set_xlabel('学习时长'); ax.set_ylabel('测验分数'); ax.legend()\nplt.tight_layout(); plt.show()\nprint('斜率=', round(slope,3), '; 截距=', round(intercept,2))"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "tf",
+          "question": "np.polyfit(x, y, 1) 返回 [slope, intercept]。",
+          "options": [
+            "正确",
+            "错误"
+          ],
+          "answer": 0,
+          "explain": ""
+        },
+        {
+          "type": "fill",
+          "question": "散点图用 plt.____",
+          "answer": "scatter",
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "箱线图分组对比",
+      "content": "用 qcut 把 duration 分三档，比较不同档位分数分布。",
+      "codeExamples": [
+        {
+          "title": "boxplot",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-duration-score.csv')\ndf['duration_level'] = pd.qcut(df['duration_min'], 3, labels=['短','中','长'])\ndf.boxplot(column='quiz_score', by='duration_level', figsize=(7,5))\nplt.title('学习时长分档 vs 测验分数'); plt.suptitle(''); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "展示分组分布最直观？",
+          "options": [
+            "散点图",
+            "箱线图",
+            "饼图",
+            "纯文本"
+          ],
+          "answer": 1,
+          "explain": ""
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "输出 pause_count、forward_count、quiz_score 的相关系数矩阵。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-duration-score.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "df[['pause_count','forward_count','quiz_score']].corr()"
+      ],
+      "sampleAnswer": "print(df[['pause_count','forward_count','quiz_score']].corr().round(3))"
+    },
+    {
+      "id": "e2",
+      "prompt": "绘制 duration_min 的直方图。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-duration-score.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "plt.hist(df['duration_min'], bins=30)"
+      ],
+      "sampleAnswer": "plt.hist(df['duration_min'], bins=30, edgecolor='black')\nplt.xlabel('学习时长(分钟)'); plt.ylabel('人数'); plt.title('学习时长分布')\nplt.tight_layout(); plt.show()"
+    },
+    {
+      "id": "e3",
+      "prompt": "以 pause_count 为 x, quiz_score 为 y 做散点+直线并输出斜率。",
+      "starterCode": "import pandas as pd; import numpy as np; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-duration-score.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "np.polyfit(x, y, 1)",
+        "输出 slope"
+      ],
+      "sampleAnswer": "x = df['pause_count'].values; y = df['quiz_score'].values\nslope, intercept = np.polyfit(x, y, 1)\nprint('斜率=', round(slope,3), '; 截距=', round(intercept,2))\nplt.scatter(x,y,s=6,alpha=.4); plt.plot(x, slope*x+intercept, 'r')\nplt.xlabel('暂停次数'); plt.ylabel('分数'); plt.tight_layout(); plt.show()"
+    }
+  ],
+  "quizzes": [
+    {
+      "type": "single",
+      "question": "相关系数 0 代表？",
+      "options": [
+        "正相关",
+        "无线性相关",
+        "负相关",
+        "完全一致"
+      ],
+      "answer": 1,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "相关性就是因果性。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 1,
+      "explain": "相关性≠因果性。"
+    },
+    {
+      "type": "multi",
+      "question": "做相关性分析的常用图？",
+      "options": [
+        "散点图",
+        "heatmap",
+        "pairplot",
+        "饼图"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "np.polyfit(x, y, 1) 返回？",
+      "options": [
+        "只有斜率",
+        "斜率+截距",
+        "R 平方",
+        "只有截距"
+      ],
+      "answer": 1,
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "等频分箱用 pd.____",
+      "answer": "qcut",
+      "explain": ""
+    }
+  ],
+  "finalExam": [
+    {
+      "type": "single",
+      "question": "判断行为对成绩影响最直接看？",
+      "options": [
+        "相关系数与回归斜率",
+        "姓名分布",
+        "行数",
+        "列名"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "学习时长与分数正相关不代表因果。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "学习行为分析常用图？",
+      "options": [
+        "散点",
+        "箱线",
+        "相关性热力图",
+        "回归直线"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "保留 3 位小数用 .round(____)",
+      "answer": "3",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "-0.32 的相关系数代表？",
+      "options": [
+        "越多越好",
+        "越多越差",
+        "无关系",
+        "完全一致"
+      ],
+      "answer": 1,
+      "explain": ""
+    }
+  ]
+}

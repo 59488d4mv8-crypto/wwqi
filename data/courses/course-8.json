@@ -1,0 +1,261 @@
+{
+  "id": 8,
+  "title": "每日访问量与销量时间序列预测",
+  "subtitle": "按日/周流量趋势、节假日波动与短期预测",
+  "businessGoal": "预测流量高峰，用于服务器/运营排期",
+  "skills": [
+    "时间序列",
+    "移动平均",
+    "简单预测模型"
+  ],
+  "dataset": "sample-traffic-sales.csv",
+  "cover": "📅",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "读取并观察趋势",
+      "content": "parse_dates 把 date 列解析为 datetime，用双折线分别展示 visits 与 sales。",
+      "codeExamples": [
+        {
+          "title": "趋势图",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-traffic-sales.csv', parse_dates=['date'])\nprint(df.head())\nfig, ax1 = plt.subplots(figsize=(10,5))\nax1.plot(df['date'], df['visits'], color='#2563eb', label='访问量')\nax1.set_ylabel('访问量', color='#2563eb')\nax2 = ax1.twinx(); ax2.plot(df['date'], df['sales'], color='#f97316', label='销量')\nax2.set_ylabel('销量', color='#f97316')\nplt.title('访问量与销量时间序列'); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "tf",
+          "question": "parse_dates=['date'] 可将日期字符串解析为 datetime。",
+          "options": [
+            "正确",
+            "错误"
+          ],
+          "answer": 0,
+          "explain": ""
+        },
+        {
+          "type": "fill",
+          "question": "生成第二个 y 轴用 ax.____",
+          "answer": "twinx",
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "移动平均平滑",
+      "content": "rolling(window=7, min_periods=1).mean() 产生 7 日移动平均。",
+      "codeExamples": [
+        {
+          "title": "MA7",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-traffic-sales.csv', parse_dates=['date'])\ndf['visits_ma7'] = df['visits'].rolling(7, min_periods=1).mean()\nfig, ax = plt.subplots(figsize=(10,5))\nax.plot(df['date'], df['visits'], alpha=.4, label='每日访问量')\nax.plot(df['date'], df['visits_ma7'], lw=2, label='7日 MA')\nax.legend(); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "滑动均值用？",
+          "options": [
+            ".rolling(window).mean()",
+            ".diff()",
+            ".dropna()",
+            ".head()"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "简单短期预测",
+      "content": "用最近 7 日均值预测接下来 3 日，给排期做参考。",
+      "codeExamples": [
+        {
+          "title": "预测",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-traffic-sales.csv', parse_dates=['date'])\nmean7 = df['visits'].tail(7).mean()\nprint('最近7日平均访问量:', round(mean7,1))\nfuture = pd.date_range(df['date'].max() + pd.Timedelta(days=1), periods=3, freq='D')\npred = pd.DataFrame({'date': future, 'visits_pred': mean7})\nprint(pred)"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "生成连续日期序列用？",
+          "options": [
+            "pd.date_range",
+            "pd.Series",
+            "pd.DataFrame",
+            "pd.cut"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "输出最近 14 日总销量与日均销量。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-traffic-sales.csv', parse_dates=['date'])\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "s = df['sales'].tail(14)",
+        "s.sum()、s.mean()"
+      ],
+      "sampleAnswer": "s = df['sales'].tail(14)\nprint('最近14日总销量:', s.sum().round(2), '; 日均:', s.mean().round(2))"
+    },
+    {
+      "id": "e2",
+      "prompt": "绘制销量的 14 日移动平均曲线与原曲线叠加。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-traffic-sales.csv', parse_dates=['date'])\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "df['sales_ma14'] = df['sales'].rolling(14, min_periods=1).mean()"
+      ],
+      "sampleAnswer": "df['sales_ma14'] = df['sales'].rolling(14, min_periods=1).mean()\nfig, ax = plt.subplots(figsize=(10,5))\nax.plot(df['date'], df['sales'], alpha=.4, label='日销量')\nax.plot(df['date'], df['sales_ma14'], lw=2, label='14日 MA')\nax.legend(); plt.tight_layout(); plt.show()"
+    },
+    {
+      "id": "e3",
+      "prompt": "用最近 7 日均值预测接下来 3 日访问量，把最近 21 日实际+预测画在同图。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-traffic-sales.csv', parse_dates=['date'])\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "mean7 = df['visits'].tail(7).mean()",
+        "pd.date_range(end_date, periods=3, freq='D')",
+        "recent = df.tail(21) 与 pred 一起 plot"
+      ],
+      "sampleAnswer": "mean7 = df['visits'].tail(7).mean()\nfuture = pd.date_range(df['date'].max()+pd.Timedelta(days=1), periods=3, freq='D')\npred = pd.DataFrame({'date': future, 'visits': mean7})\nrecent = df.tail(21)\nfig, ax = plt.subplots(figsize=(10,5))\nax.plot(recent['date'], recent['visits'], 'b-o', label='最近21日')\nax.plot(pred['date'], pred['visits'], 'r--s', label='预测(近7日均)')\nax.legend(); plt.ylabel('访问量'); plt.title('访问量短期预测'); plt.tight_layout(); plt.show()"
+    }
+  ],
+  "quizzes": [
+    {
+      "type": "single",
+      "question": "rolling(window=7).mean() 表示？",
+      "options": [
+        "近 7 行求和",
+        "近 7 个观察值的均值平滑",
+        "乘积",
+        "前 7 行均值"
+      ],
+      "answer": 1,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "以最近均值为未来值是一个实用的简单预测基准。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "时间序列常用的图？",
+      "options": [
+        "折线图",
+        "移动平均叠加",
+        "按周/月柱状",
+        "饼图按分钟"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "生成日期序列用 pd._____",
+      "answer": "date_range",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "min_periods=1 的作用？",
+      "options": [
+        "窗口未满也计算",
+        "只打印 1 行",
+        "限制 1 行",
+        "忽略缺失"
+      ],
+      "answer": 0,
+      "explain": ""
+    }
+  ],
+  "finalExam": [
+    {
+      "type": "single",
+      "question": "预测流量高峰应关注？",
+      "options": [
+        "访问量与移动平均趋势",
+        "用户 ID",
+        "评论",
+        "随机列"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "节假日/大促期间流量常出现尖峰，需单独识别。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "流量/销量时间序列的分析点？",
+      "options": [
+        "趋势",
+        "周期",
+        "异常/尖峰",
+        "预测"
+      ],
+      "answer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "生成后续 3 天日期用 pd.date_range(start, ____=3, freq='D')",
+      "answer": "periods",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "tail(7) 表示？",
+      "options": [
+        "取最后 7 行",
+        "取前 7 行",
+        "随机 7 行",
+        "删除最后 7 行"
+      ],
+      "answer": 0,
+      "explain": ""
+    }
+  ]
+}

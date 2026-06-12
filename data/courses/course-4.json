@@ -1,0 +1,247 @@
+{
+  "id": 4,
+  "title": "课程评价 NLP 情感分析",
+  "subtitle": "好评/差评挖掘、分词与词云",
+  "businessGoal": "自动挖掘课程优缺点",
+  "skills": [
+    "jieba",
+    "WordCloud",
+    "简单情感打分"
+  ],
+  "dataset": "sample-reviews.csv",
+  "cover": "💬",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "读取评论与标签分布",
+      "content": "看好评/差评/中性占比并做可视化。",
+      "codeExamples": [
+        {
+          "title": "分布图",
+          "code": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-reviews.csv')\nprint(df['label'].value_counts())\ndf['label'].value_counts().plot(kind='pie', autopct='%.1f%%')\nplt.ylabel(''); plt.tight_layout(); plt.show()"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "tf",
+          "question": "value_counts() 可以看到各标签的样本量。",
+          "options": [
+            "正确",
+            "错误"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "分词与关键词统计",
+      "content": "使用 jieba（不可用时按字切分）统计词频。",
+      "codeExamples": [
+        {
+          "title": "Top 20",
+          "code": "import pandas as pd; from collections import Counter\ndf = pd.read_csv('sample-reviews.csv')\ntry:\n    import jieba\n    tok = lambda s: list(jieba.cut(s))\nexcept Exception:\n    tok = lambda s: list(s)\nwords = []\nfor t in df['text']: words.extend(tok(t))\nfor w, n in Counter(words).most_common(20):\n    print(w, n)"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "中文分词最常用的第三方库是？",
+          "options": [
+            "jieba",
+            "numpy",
+            "requests",
+            "math"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "词云与简单情感打分",
+      "content": "好差评分别取高频词；尽量加载 wordcloud 做图。",
+      "codeExamples": [
+        {
+          "title": "词云",
+          "code": "import pandas as pd; from collections import Counter\ndf = pd.read_csv('sample-reviews.csv')\ntry:\n    import jieba\n    tok = lambda s: list(jieba.cut(s))\nexcept Exception:\n    tok = lambda s: list(s)\npos = ' '.join(df.loc[df['label']=='好评','text'])\nneg = ' '.join(df.loc[df['label']=='差评','text'])\nprint('【好评 Top 15】', Counter(tok(pos)).most_common(15))\nprint('【差评 Top 15】', Counter(tok(neg)).most_common(15))\ntry:\n    from wordcloud import WordCloud; import matplotlib.pyplot as plt\n    wc = WordCloud(background_color='white', width=700, height=350).generate(pos)\n    plt.figure(figsize=(9,4)); plt.imshow(wc, interpolation='bilinear'); plt.axis('off'); plt.title('好评词云'); plt.tight_layout(); plt.show()\nexcept Exception as e:\n    print('(wordcloud 不可用)', e)"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "fill",
+          "question": "快速计数的内置类是 collections.____",
+          "answer": "Counter",
+          "explain": ""
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "输出 1 星评价的 Top 10 词。",
+      "starterCode": "import pandas as pd; from collections import Counter\ndf = pd.read_csv('sample-reviews.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "筛选 rating==1",
+        "分词后 Counter().most_common(10)"
+      ],
+      "sampleAnswer": "texts = df.loc[df['rating']==1,'text']\ntry:\n    import jieba\n    tok = lambda s: list(jieba.cut(s))\nexcept Exception:\n    tok = lambda s: list(s)\nflat = [w for t in texts for w in tok(t)]\nprint(Counter(flat).most_common(10))"
+    },
+    {
+      "id": "e2",
+      "prompt": "绘制不同评分的评论数柱状图。",
+      "starterCode": "import pandas as pd; import matplotlib.pyplot as plt\ndf = pd.read_csv('sample-reviews.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "df['rating'].value_counts().sort_index().plot(kind='bar')"
+      ],
+      "sampleAnswer": "df['rating'].value_counts().sort_index().plot(kind='bar', color='#2563eb')\nplt.xlabel('评分'); plt.ylabel('评论数'); plt.tight_layout(); plt.show()"
+    },
+    {
+      "id": "e3",
+      "prompt": "基于正负词表打情感分，输出各标签平均分。",
+      "starterCode": "import pandas as pd\ndf = pd.read_csv('sample-reviews.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "def score(text): pos_count - neg_count",
+        "df.groupby('label')['score'].mean()"
+      ],
+      "sampleAnswer": "pos = ['清晰','细','丰富','好','推荐','入门','实战']\nneg = ['难','差','bug','太快','不细','错']\ndef score(text):\n    return sum(text.count(w) for w in pos) - sum(text.count(w) for w in neg)\ndf['score'] = df['text'].apply(score)\nprint('整体平均:', df['score'].mean().round(2))\nprint(df.groupby('label')['score'].mean().round(2))"
+    }
+  ],
+  "quizzes": [
+    {
+      "type": "single",
+      "question": "中文分词最常用第三方库？",
+      "options": [
+        "jieba",
+        "math",
+        "csv",
+        "os"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "wordcloud 不可用时，Counter 输出的词频也能给结论。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "Counter.most_common(10) 返回？",
+      "options": [
+        "Top 10 (词, 次数)",
+        "前 10 行",
+        "前 10 列",
+        "字母序 10 项"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "文本分析常用手段？",
+      "options": [
+        "词频统计",
+        "词云",
+        "正负词表打分",
+        "字符随机替换"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "Series 逐行处理用 .____",
+      "answer": "apply",
+      "explain": ""
+    }
+  ],
+  "finalExam": [
+    {
+      "type": "single",
+      "question": "自动挖掘课程优缺点最直接看？",
+      "options": [
+        "好评/差评的高频关键词",
+        "课程时长",
+        "讲师",
+        "用户 ID 分布"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "情感分析结果可以作为唯一改进依据。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 1,
+      "explain": "需结合人工抽样等多源证据。"
+    },
+    {
+      "type": "multi",
+      "question": "评论数据常用的分析手段？",
+      "options": [
+        "词频",
+        "词云",
+        "好评/差评对比",
+        "随机数"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "字符串序列合并成一个字符串用 ' '.____(list)。",
+      "answer": "join",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "取 Top n 词频用？",
+      "options": [
+        "Counter(...).most_common(n)",
+        "head(n)",
+        "sample(n)",
+        "mean()"
+      ],
+      "answer": 0,
+      "explain": ""
+    }
+  ]
+}

@@ -1,0 +1,260 @@
+{
+  "id": 7,
+  "title": "推荐课程关联规则分析（Apriori）",
+  "subtitle": "用户学习/购买的课程组合 → 关联规则",
+  "businessGoal": "给学生做“学过这门课还会学什么”",
+  "skills": [
+    "mlxtend 思路",
+    "关联规则可视化"
+  ],
+  "dataset": "sample-course-bundles.csv",
+  "cover": "🔗",
+  "chapters": [
+    {
+      "id": "c1",
+      "title": "课程组合数据",
+      "content": "每行形如 '课程1,课程3,课程7'，代表一个用户学习的课程集合。",
+      "codeExamples": [
+        {
+          "title": "切分",
+          "code": "import pandas as pd\ndf = pd.read_csv('sample-course-bundles.csv')\ndf['course_list'] = df['courses'].str.split(',')\nprint(df['course_list'].head())\nall_c = sorted({c for s in df['course_list'] for c in s})\nprint('全部课程:', all_c)"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "把逗号字符串切分为列表用？",
+          "options": [
+            ".str.split(',')",
+            ".replace(',','')",
+            ".upper()",
+            ".zfill(3)"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "title": "频繁项集",
+      "content": "不依赖 mlxtend，手写简化版 Apriori。support = 共同出现次数 / 总用户数。",
+      "codeExamples": [
+        {
+          "title": "单项/两项支持度",
+          "code": "import pandas as pd; from itertools import combinations; from collections import Counter\ndf = pd.read_csv('sample-course-bundles.csv')\nsets = [set(s.split(',')) for s in df['courses']]\nN = len(sets)\nc1 = Counter()\nfor s in sets:\n    for c in s: c1[frozenset({c})] += 1\nprint('Top 单项:')\nfor item, c in c1.most_common(8):\n    print(list(item), f'{c/N:.2%}')\nc2 = Counter()\nfor s in sets:\n    if len(s) >= 2:\n        for a, b in combinations(sorted(s), 2): c2[frozenset({a, b})] += 1\nprint('\\nTop 两项组合:')\nfor item, c in c2.most_common(8):\n    print(list(item), f'{c/N:.2%}')"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "tf",
+          "question": "support 是组合出现的样本比例。",
+          "options": [
+            "正确",
+            "错误"
+          ],
+          "answer": 0,
+          "explain": ""
+        },
+        {
+          "type": "fill",
+          "question": "生成长度为 2 的无序不重复组合用 itertools.____",
+          "answer": "combinations",
+          "explain": ""
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "title": "关联规则与推荐",
+      "content": "conf(A→B) = support(A,B)/support(A)，据此给出 “学过 A 推荐 B” 的规则。",
+      "codeExamples": [
+        {
+          "title": "推荐",
+          "code": "import pandas as pd; from itertools import combinations; from collections import Counter\ndf = pd.read_csv('sample-course-bundles.csv')\nsets = [set(s.split(',')) for s in df['courses']]\nc1 = Counter(); c2 = Counter()\nfor s in sets:\n    for c in s: c1[frozenset({c})] += 1\n    if len(s) >= 2:\n        for a, b in combinations(sorted(s), 2): c2[frozenset({a, b})] += 1\nrules = []\nfor p, cnt in c2.items():\n    a, b = sorted(p)\n    rules += [(f'{a} -> {b}', cnt / c1[frozenset({a})], cnt/len(sets))]\nrules.sort(key=lambda x: x[1], reverse=True)\nfor r in rules[:10]:\n    print(r[0], f'conf={r[1]:.2%}, supp={r[2]:.2%}')"
+        }
+      ],
+      "selfCheckQuestions": [
+        {
+          "type": "single",
+          "question": "高置信度 A→B 说明？",
+          "options": [
+            "学过 A 的人很可能也学 B",
+            "A 人数一定多",
+            "B 更难",
+            "B 更便宜"
+          ],
+          "answer": 0,
+          "explain": ""
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "prompt": "输出被学习次数最多的前 5 门课程。",
+      "starterCode": "import pandas as pd; from collections import Counter\ndf = pd.read_csv('sample-course-bundles.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "flat = [c for s in df['courses'] for c in s.split(',')]",
+        "Counter(flat).most_common(5)"
+      ],
+      "sampleAnswer": "flat = [c for s in df['courses'] for c in s.split(',')]\nprint(Counter(flat).most_common(5))"
+    },
+    {
+      "id": "e2",
+      "prompt": "输出 Top 10 两项组合的支持度。",
+      "starterCode": "import pandas as pd; from itertools import combinations; from collections import Counter\ndf = pd.read_csv('sample-course-bundles.csv')\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "sets = [set(s.split(',')) for s in df['courses']]",
+        "遍历 combinations(sorted(s),2) 并用 Counter 计数"
+      ],
+      "sampleAnswer": "sets = [set(s.split(',')) for s in df['courses']]\nN = len(sets)\nc = Counter()\nfor s in sets:\n    if len(s) >= 2:\n        for a,b in combinations(sorted(s), 2): c[frozenset({a,b})] += 1\nfor item, n in c.most_common(10):\n    print(list(item), f'{n/N:.2%}')"
+    },
+    {
+      "id": "e3",
+      "prompt": "给定 TARGET='课程1'，输出最可能一起学习的 Top 3 课程（按置信度）。",
+      "starterCode": "import pandas as pd; from collections import Counter; from itertools import combinations\ndf = pd.read_csv('sample-course-bundles.csv')\nTARGET = '课程1'\n",
+      "expectedChecker": {
+        "type": "output_match",
+        "expectedContains": [
+          ""
+        ]
+      },
+      "hints": [
+        "计算包含 TARGET 的用户数",
+        "计算 TARGET 与课程 X 的共现次数",
+        "conf = co_x / total_with_target"
+      ],
+      "sampleAnswer": "sets = [set(s.split(',')) for s in df['courses']]\ntotal = sum(1 for s in sets if TARGET in s)\nco = Counter()\nfor s in sets:\n    if TARGET in s:\n        for c in s:\n            if c != TARGET: co[c] += 1\nres = sorted(co.items(), key=lambda x: x[1]/total, reverse=True)\nfor c, n in res[:3]:\n    print(f'{TARGET} -> {c}: conf={n/total:.2%}')"
+    }
+  ],
+  "quizzes": [
+    {
+      "type": "single",
+      "question": "support 衡量？",
+      "options": [
+        "组合出现比例",
+        "最贵商品",
+        "最低价格",
+        "日期差"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "高置信度 A→B 常用来做“学过 A 推荐 B”。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "combinations(seq, 2) 的含义？",
+      "options": [
+        "生成有序对",
+        "长度为 2 的无序不重复组合",
+        "笛卡尔积",
+        "幂集"
+      ],
+      "answer": 1,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "衡量关联规则的指标？",
+      "options": [
+        "支持度",
+        "置信度",
+        "提升度",
+        "随机数"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "按逗号切分字符串用 s._____",
+      "answer": "split",
+      "explain": ""
+    }
+  ],
+  "finalExam": [
+    {
+      "type": "single",
+      "question": "“学过这门课还会学什么”对应？",
+      "options": [
+        "关联规则",
+        "聚类",
+        "回归",
+        "布局"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "tf",
+      "question": "都是热门课的高共现规则推荐价值有限。",
+      "options": [
+        "正确",
+        "错误"
+      ],
+      "answer": 0,
+      "explain": ""
+    },
+    {
+      "type": "multi",
+      "question": "Apriori 工程化的常见步骤？",
+      "options": [
+        "找频繁项",
+        "计算置信/提升",
+        "过滤低质量规则",
+        "随机推荐"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explain": ""
+    },
+    {
+      "type": "fill",
+      "question": "枚举无序不重复的组合用 itertools.____",
+      "answer": "combinations",
+      "explain": ""
+    },
+    {
+      "type": "single",
+      "question": "conf(A→B) 的公式？",
+      "options": [
+        "support(A,B)/support(A)",
+        "sum(A) + sum(B)",
+        "product",
+        "random"
+      ],
+      "answer": 0,
+      "explain": ""
+    }
+  ]
+}
